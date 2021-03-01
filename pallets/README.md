@@ -1,6 +1,6 @@
 # Toaster
 
-[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/dandanlen/substrate-node-template)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/dandanlen/substrate-node-template/-/tree/dandanlen/challenge-template)
 
 Welcome to the toaster challenge!
 
