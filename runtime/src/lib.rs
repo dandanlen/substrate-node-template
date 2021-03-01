@@ -40,7 +40,7 @@ pub use frame_support::{
 use pallet_transaction_payment::CurrencyAdapter;
 
 /// Import the template pallet.
-pub use pallet_template;
+pub use pallet_toaster;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -260,7 +260,7 @@ impl pallet_sudo::Config for Runtime {
 }
 
 /// Configure the template pallet in pallets/template.
-impl pallet_template::Config for Runtime {
+impl pallet_toaster::Config for Runtime {
 	type Event = Event;
 }
 
@@ -280,7 +280,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment::{Module, Storage},
 		Sudo: pallet_sudo::{Module, Call, Config<T>, Storage, Event<T>},
 		// Include the custom logic from the template pallet in the runtime.
-		TemplateModule: pallet_template::{Module, Call, Storage, Event<T>},
+		Toaster: pallet_toaster::{Module, Call, Storage, Event<T>},
 	}
 );
 
