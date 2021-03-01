@@ -2,8 +2,7 @@ image:
   file: .gitpod.Dockerfile
 
 tasks:
-  - before: eval $(gp env -e)
-    prebuild: SKIP_WASM_BUILD=1 cargo check --release
+    - prebuild: SKIP_WASM_BUILD=1 cargo check --release
 
 github:
   prebuilds:
@@ -23,3 +22,7 @@ github:
     addBadge: false
     # add a label once the prebuild is ready to pull requests (defaults to false)
     addLabel: prebuilt-in-gitpod
+
+vscode:
+  extensions:
+    - rust-lang.rust
