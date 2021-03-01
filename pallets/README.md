@@ -17,16 +17,28 @@ Decentralised trust-minimised toasters are the obvious solution to this conundru
 ## Requirements
 
 1. Our toaster will have a capacity of four slices. 
-    - Bonus: the slice capacity can be configured as a runtime paramter.
 2. Any network participant should be able to insert a slice into the toaster.
-    - You can insert as many slices as you want, one slice at a time.
-    - Bonus: configurable low-carb mode sets a limit of one slice per participant.
+    - You can only insert a single slice.
 3. If the toaster is full, bad luck, return an error.
 4. You can't take your slice back once it's inserted (danger of electrocution).
-5. The last person to insert a slice shall start the toaster.
-6. It takes four blocks to toast bread. 
-7. Once the bread is toasted, the toaster is emptied, participants get their toast. 
+5. If the toaster is full anyone with a slice in it can turn it on to toast the slices.
+6. Toasting the slices should:
+    - Empty the toaster.
+    - Return an event or multiple events signifying the toasted slices. 
+
+## Bonus points
+
+- Multi-slice:
+    - Anyone can toast multiple slices
+- Delay: 
+    - Toast takes N blocks 
+    - N might be configurable or random within a given range
+- Configuration:
+    - configurable toaster capacity
+    - configurable limit on slices per user
+    - Configurable toasting duration
 
 > The following are explicitly out of scope: 
 > - Staking and consensus
 > - Cryptography
+> - Weights
