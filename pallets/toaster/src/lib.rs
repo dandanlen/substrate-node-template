@@ -4,7 +4,7 @@
 /// Learn more about FRAME and the core library of Substrate FRAME pallets:
 /// https://substrate.dev/docs/en/knowledgebase/runtime/frame
 
-use frame_support::{decl_module, decl_storage, decl_event, decl_error, dispatch, traits::Get};
+use frame_support::{decl_module, decl_storage, decl_event, decl_error, dispatch, traits::Get, IterableStorageMap};
 use frame_system::ensure_signed;
 
 #[cfg(test)]
@@ -28,7 +28,9 @@ decl_storage! {
 	trait Store for Module<T: Config> as Toaster {
 		// Learn more about declaring storage items:
 		// https://substrate.dev/docs/en/knowledgebase/runtime/storage#declaring-storage-items
-		Something get(fn something): Option<u32>;
+		Toaster get(fn toaster): map hasher(identity) <T as frame_system::Config>::AccountId => ();
+
+		Slices get(fn slices): u8;
 	}
 }
 
@@ -38,17 +40,20 @@ decl_event!(
 	pub enum Event<T> where AccountId = <T as frame_system::Config>::AccountId {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
-		SomethingStored(u32, AccountId),
+		SliceInserted(AccountId),
+		Toasted(AccountId),
 	}
 );
 
 // Errors inform users that something went wrong.
 decl_error! {
 	pub enum Error for Module<T: Config> {
-		/// Error names should be descriptive.
-		NoneValue,
-		/// Errors should have helpful documentation associated with them.
-		StorageOverflow,
+		/// The account already has a slice in the toaster.
+		ToastLimitReached,
+		/// Can't add any more slices until slices are toasted.
+		ToasterFull,
+		/// No slice in the toaster aka. no skin in the game.
+		NoSliceInTheToaster,
 	}
 }
 
@@ -63,41 +68,58 @@ decl_module! {
 		// Events must be initialized if they are used by the pallet.
 		fn deposit_event() = default;
 
-		/// An example dispatchable that takes a singles value as a parameter, writes the value to
-		/// storage and emits an event. This function must be dispatched by a signed extrinsic.
+		/// Insert a slice of toast.
 		#[weight = 10_000 + T::DbWeight::get().writes(1)]
-		pub fn do_something(origin, something: u32) -> dispatch::DispatchResult {
+		pub fn insert_slice(origin) -> dispatch::DispatchResult {
 			// Check that the extrinsic was signed and get the signer.
 			// This function will return an error if the extrinsic is not signed.
 			// https://substrate.dev/docs/en/knowledgebase/runtime/origin
 			let who = ensure_signed(origin)?;
 
+			let num_slices = Slices::get();
+
+			if num_slices == 4u8 {
+				Err(Error::<T>::ToasterFull)?;
+			}
+
 			// Update storage.
-			Something::put(something);
+			Toaster::<T>::try_mutate_exists(&who, |storage| {
+				match storage {
+					Some(_) => Err(Error::<T>::ToastLimitReached),
+					None => {
+						*storage = Some(());
+						Ok(())
+					},
+				}
+			})?;
+
+			// If we get to here we can update the count.
+			Slices::mutate(|count| *count += 1);
 
 			// Emit an event.
-			Self::deposit_event(RawEvent::SomethingStored(something, who));
+			Self::deposit_event(RawEvent::SliceInserted(who));
+
 			// Return a successful DispatchResult
 			Ok(())
 		}
 
-		/// An example dispatchable that may throw a custom error.
-		#[weight = 10_000 + T::DbWeight::get().reads_writes(1,1)]
-		pub fn cause_error(origin) -> dispatch::DispatchResult {
-			let _who = ensure_signed(origin)?;
+		/// Toast the bread
+		#[weight = 10_000 + T::DbWeight::get().writes(1)]
+		pub fn toast(origin) -> dispatch::DispatchResult {
+			let who = ensure_signed(origin)?;
 
-			// Read a value from storage.
-			match Something::get() {
-				// Return an error if the value has not been set.
-				None => Err(Error::<T>::NoneValue)?,
-				Some(old) => {
-					// Increment the value read from storage; will error in the event of overflow.
-					let new = old.checked_add(1).ok_or(Error::<T>::StorageOverflow)?;
-					// Update the value in storage with the incremented result.
-					Something::put(new);
-					Ok(())
-				},
+			if !Toaster::<T>::contains_key(who) {
+				Err(Error::<T>::NoSliceInTheToaster)?;
 			}
+
+			let mut slices_removed = 0;
+			Toaster::<T>::drain().for_each(|(acct, _)| {
+				slices_removed += 1;
+				Self::deposit_event(RawEvent::Toasted(acct));
+			});
+			Slices::mutate(|count| *count -= slices_removed);
+
+			Ok(())
 		}
 	}
 }

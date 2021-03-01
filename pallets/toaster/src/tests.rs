@@ -2,22 +2,64 @@ use crate::{Error, mock::*};
 use frame_support::{assert_ok, assert_noop};
 
 #[test]
-fn it_works_for_default_value() {
+fn can_insert_slice() {
 	new_test_ext().execute_with(|| {
 		// Dispatch a signed extrinsic.
-		assert_ok!(TemplateModule::do_something(Origin::signed(1), 42));
+		assert_ok!(Toaster::insert_slice(Origin::signed(1)));
 		// Read pallet storage and assert an expected result.
-		assert_eq!(TemplateModule::something(), Some(42));
+		assert_eq!(Toaster::slices(), 1u8);
 	});
 }
 
 #[test]
-fn correct_error_for_none_value() {
+fn cant_insert_more_than_four_slices() {
 	new_test_ext().execute_with(|| {
-		// Ensure the expected error is thrown when no value is present.
+		assert_ok!(Toaster::insert_slice(Origin::signed(1)));
+		assert_ok!(Toaster::insert_slice(Origin::signed(2)));
+		assert_ok!(Toaster::insert_slice(Origin::signed(3)));
+		assert_ok!(Toaster::insert_slice(Origin::signed(4)));
+		// Ensure toaster is full after four slices.
 		assert_noop!(
-			TemplateModule::cause_error(Origin::signed(1)),
-			Error::<Test>::NoneValue
+			Toaster::insert_slice(Origin::signed(5)),
+			Error::<Test>::ToasterFull
 		);
+
+		assert_eq!(Toaster::slices(), 4u8);
+	});
+}
+
+#[test]
+fn cant_insert_multiple_slices_per_user() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Toaster::insert_slice(Origin::signed(1)));
+		// Ensure each user is limited to a single slice.
+		assert_noop!(
+			Toaster::insert_slice(Origin::signed(1)),
+			Error::<Test>::ToastLimitReached
+		);
+	});
+}
+
+#[test]
+fn only_slice_owners_can_toast() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Toaster::insert_slice(Origin::signed(1)));
+		assert_ok!(Toaster::insert_slice(Origin::signed(2)));
+		assert_ok!(Toaster::insert_slice(Origin::signed(3)));
+		assert_ok!(Toaster::insert_slice(Origin::signed(4)));
+
+		// Foreign account can't call toast
+		assert_noop!(
+			Toaster::toast(Origin::signed(5)),
+			Error::<Test>::NoSliceInTheToaster
+		);
+
+		// Member can toast
+		assert_ok!(Toaster::toast(Origin::signed(4)));
+
+		// Toaster is emptied and accepting slices
+		assert_eq!(Toaster::slices(), 0u8);
+		assert_ok!(Toaster::insert_slice(Origin::signed(1)));
+		assert_ok!(Toaster::insert_slice(Origin::signed(5)));
 	});
 }
