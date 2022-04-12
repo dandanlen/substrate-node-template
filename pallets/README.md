@@ -35,14 +35,22 @@ Decentralised trust-minimised toasters are the obvious solution to this conundru
 
 ## Bonus points / Variants
 
+These are not necessary but you may want to think about how you would implement these features, and this might inform your design choices.
+
 - Multi-slice:
     - Anyone can toast multiple slices
 - Fork (can be hard or soft):
     - An account can remove its slice from a toaster (only if not switched on!)
 - Delay: 
-    - Toasting takes N blocks, where is a param chosen by the account starting the toaster.
-    - Or each account votes on a duration when inserting their slice, duration is the median.
+    - Toasting takes N blocks, where N is a param chosen by the account starting the toaster.
+    - Or each account votes on how toasty they like their toast - this determines the toasting duration.
 - Configuration:
     - configurable toaster capacity
     - configurable limit on slices per user
     - Configurable max toasting duration
+
+## Submitting & Criteria
+
+Please make your submission by opening a PR against the `pallet-template` branch. You do not need to modify any files outside of the `toaster` pallet. Your submission should be as complete as possible, ready to be merged and released into the wild.
+
+There is no single correct solution and some design choices and tradeoffs may need to be made. Such are the challenges of cutting-edge decentralised toasting. Whatever choices you make, you should be able to justify and defend them. 
